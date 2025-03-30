@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}Container Security Configurations | Sentinel Trading{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Container Security Configurations</h2>
+  <p class="lead">Manage security configurations for script execution containers</p>
+  
+  <div class="d-flex justify-content-between mb-4">
+    <div>
+      <p>Security configurations control resource limits and permissions for script execution containers.</p>
+    </div>
+    <div class="btn-group">
+      <a href="{{ url_for('create_security_config') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Create New Config
+      </a>
+      <a href="/admin/seed-security-configs" class="btn btn-outline-secondary" onclick="return confirm('This will create default security configurations for user, admin, and super_admin roles. Continue?');">
+        <i class="fas fa-seedling"></i> Seed Default Configs
+      </a>
+    </div>
+  </div>
+  
+  {% if configs %}
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead class="table-dark">
+          <tr>
+            <th>Name</th>
+            <th>Role</th>
+            <th>Resources</th>
+            <th>Security</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for config in configs %}
+            <tr>
+              <td>{{ config.name }}</td>
+              <td>
+                <span class="badge bg-{{ 'success' if config.role == 'super_admin' else 'primary' if config.role == 'admin' else 'secondary' }}">
+                  {{ config.role }}
+                </span>
+              </td>
+              <td>
+                <div><strong>Memory:</strong> {{ config.mem_limit }}</div>
+                <div><strong>CPU:</strong> {{ config.cpu_quota / 1000 }}%</div>
+                <div><strong>Processes:</strong> {{ config.pids_limit }}</div>
+                <div><strong>Timeout:</strong> {{ config.timeout }}s</div>
+              </td>
+              <td>
+                <div><i class="fas fa-{{ 'check text-success' if config.network_access else 'times text-danger' }}"></i> Network Access</div>
+                <div><i class="fas fa-{{ 'check text-success' if config.allow_file_write else 'times text-danger' }}"></i> File Write</div>
+                <div><i class="fas fa-{{ 'check text-success' if config.restrict_capabilities else 'times text-danger' }}"></i> Restricted Capabilities</div>
+                <div><strong>Seccomp:</strong> {{ config.seccomp_profile }}</div>
+              </td>
+              <td>{{ config.created_at.strftime('%Y-%m-%d') }}</td>
+              <td>
+                <div class="btn-group">
+                  <a href="{{ url_for('edit_security_config', config_id=config.id) }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-edit"></i> Edit
+                  </a>
+                  {% if config.role not in ['user', 'admin', 'super_admin'] %}
+                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ config.id }}">
+                      <i class="fas fa-trash"></i> Delete
+                    </button>
+                  {% endif %}
+                </div>
+                
+                <!-- Delete Modal -->
+                <div class="modal fade" id="deleteModal{{ config.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ config.id }}" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel{{ config.id }}">Confirm Deletion</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        Are you sure you want to delete the security configuration <strong>{{ config.name }}</strong>?
+                        <div class="alert alert-warning mt-3">
+                          <i class="fas fa-exclamation-triangle"></i> This action cannot be undone.
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form action="{{ url_for('delete_security_config', config_id=config.id) }}" method="post">
+                          <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle"></i> No security configurations found. Create your first configuration.
+    </div>
+  {% endif %}
+  
+  <div class="card mt-4">
+    <div class="card-header bg-info text-white">
+      <h5 class="mb-0"><i class="fas fa-info-circle"></i> About Container Security</h5>
+    </div>
+    <div class="card-body">
+      <h6>Resource Limits</h6>
+      <ul>
+        <li><strong>Memory Limit:</strong> Maximum memory allocation for containers (e.g., "256m", "1g")</li>
+        <li><strong>CPU Quota:</strong> CPU allocation percentage (25% = 25000)</li>
+        <li><strong>Process Limit:</strong> Maximum number of processes allowed inside containers</li>
+        <li><strong>Timeout:</strong> Maximum execution time in seconds before termination</li>
+      </ul>
+      
+      <h6>Security Options</h6>
+      <ul>
+        <li><strong>Network Access:</strong> Allow containers to access network resources</li>
+        <li><strong>File Write:</strong> Allow write access to the container filesystem</li>
+        <li><strong>Restricted Capabilities:</strong> Limit Linux capabilities for enhanced security</li>
+        <li><strong>Seccomp Profile:</strong> System call filtering profile ("default", "strict", "custom")</li>
+      </ul>
+      
+      <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i> <strong>Default configurations for major roles (user, admin, super_admin) cannot be deleted</strong>, but they can be edited to adjust resource limits and permissions.
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

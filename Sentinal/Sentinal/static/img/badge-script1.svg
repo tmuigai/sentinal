@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="50" r="45" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="50" y="43" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">FIRST</text>
+  <text x="50" y="63" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white" text-anchor="middle">SCRIPT</text>
+  <path d="M30,25 L60,25 L70,35 L70,75 L30,75 Z" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"/>
+  <path d="M60,25 L60,35 L70,35 Z" fill="#bdc3c7" stroke="#bdc3c7" stroke-width="1"/>
+  <path d="M40,45 L60,45 M40,55 L55,55 M40,65 L50,65" stroke="#7f8c8d" stroke-width="2"/>
+</svg>

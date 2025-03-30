@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile - Trading Scripts Platform{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">User Profile</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center mb-4 mb-md-0">
+                        <div class="avatar mb-3" style="width: 120px; height: 120px; border-radius: 50%; background-color: var(--bs-primary); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem; margin: 0 auto;">
+                            {{ user.email[0].upper() }}
+                        </div>
+                        <h5>{{ user.email }}</h5>
+                        <p>
+                            <span class="badge bg-{{ 'success' if user.role == 'admin' else 'primary' }}">
+                                {{ user.role|capitalize }}
+                            </span>
+                        </p>
+                        <p class="mb-1">Member since: {{ user.created_at.strftime('%Y-%m-%d') }}</p>
+                        <div class="balance-display mt-3 mb-3">
+                            <span>Balance:</span>
+                            <h3 class="text-success">${{ user.balance|round(2) }}</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <form id="profile-form" method="POST" action="{{ url_for('profile') }}" class="needs-validation" novalidate>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" readonly>
+                                <div class="form-text">Email address cannot be changed</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="current_password" class="form-label">Current Password</label>
+                                <input type="password" class="form-control" id="current_password" name="current_password">
+                                <div class="form-text">Enter your current password to make changes</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="new_password" class="form-label">New Password</label>
+                                <input type="password" class="form-control" id="new_password" name="new_password" pattern=".{8,}" title="Password must be at least 8 characters long">
+                                <div class="form-text">Leave blank if you don't want to change your password</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="confirm_password" class="form-label">Confirm New Password</label>
+                                <input type="password" class="form-control" id="confirm_password" name="confirm_password">
+                                <div class="invalid-feedback">Passwords do not match</div>
+                            </div>
+                            
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="two_factor_enabled" name="two_factor_enabled" {% if user.two_factor_enabled %}checked{% endif %}>
+                                <label class="form-check-label" for="two_factor_enabled">Enable Two-Factor Authentication</label>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow-lg">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">API Tokens</h4>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <p class="mb-0">Connect your Deriv account to execute trades</p>
+                    <a href="{{ url_for('deriv_login') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-link me-2"></i>Connect Deriv Account
+                    </a>
+                </div>
+                
+                {% if user.deriv_tokens %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Token ID</th>
+                                <th>Created</th>
+                                <th>Expiry</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for token in user.deriv_tokens %}
+                            <tr>
+                                <td>{{ token.id }}</td>
+                                <td>{{ token.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>{{ token.expiry.strftime('%Y-%m-%d %H:%M') if token.expiry else 'No expiry' }}</td>
+                                <td>
+                                    <form action="{{ url_for('delete_token', token_id=token.id) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-danger delete-confirm">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    You don't have any connected accounts yet. Connect your Deriv account to execute trades.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+{% endblock %}

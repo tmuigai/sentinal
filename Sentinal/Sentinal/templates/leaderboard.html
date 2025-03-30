@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Leaderboard - Sentinel Trading Platform{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Community Leaderboard</h1>
+            
+            <div class="card bg-dark mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Compete with other traders to earn achievements and climb the ranks!</h5>
+                    <p class="card-text text-muted">Leaderboard positions are based on experience points (XP) earned through trading, script creation, and daily activity.</p>
+                    
+                    <div class="btn-group mb-3">
+                        <a href="{{ url_for('leaderboard', period='all') }}" class="btn {% if time_period == 'all' %}btn-primary{% else %}btn-outline-secondary{% endif %}">All Time</a>
+                        <a href="{{ url_for('leaderboard', period='month') }}" class="btn {% if time_period == 'month' %}btn-primary{% else %}btn-outline-secondary{% endif %}">This Month</a>
+                        <a href="{{ url_for('leaderboard', period='week') }}" class="btn {% if time_period == 'week' %}btn-primary{% else %}btn-outline-secondary{% endif %}">This Week</a>
+                    </div>
+                    
+                    {% if user %}
+                        <div class="alert alert-info">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>Your Stats:</strong> 
+                                    Level {{ user.level }} 
+                                    ({{ user.experience_points }} XP) 
+                                    {% if user_rank %}
+                                        <span class="badge bg-primary">Rank #{{ user_rank }}</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <a href="{{ url_for('user_achievements') }}" class="btn btn-sm btn-outline-light">View Your Achievements</a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-dark table-striped">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Player</th>
+                            <th>Level</th>
+                            <th>XP</th>
+                            <th>Streak</th>
+                            <th>Last Active</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user_item in users %}
+                            <tr class="{% if user and user.id == user_item.id %}table-primary{% endif %}">
+                                <td>
+                                    {% if loop.index == 1 %}
+                                        <span class="badge bg-warning text-dark">🏆 1st</span>
+                                    {% elif loop.index == 2 %}
+                                        <span class="badge bg-secondary">🥈 2nd</span>
+                                    {% elif loop.index == 3 %}
+                                        <span class="badge bg-danger">🥉 3rd</span>
+                                    {% else %}
+                                        {{ loop.index }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ user_item.username or user_item.email.split('@')[0] }}
+                                    {% if user_item.role == 'admin' %}
+                                        <span class="badge bg-info">Admin</span>
+                                    {% elif user_item.role == 'super_admin' %}
+                                        <span class="badge bg-danger">Super Admin</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ user_item.level }}</td>
+                                <td>{{ user_item.experience_points }}</td>
+                                <td>
+                                    {% if user_item.streak_days > 0 %}
+                                        <span class="badge bg-warning text-dark">{{ user_item.streak_days }} days</span>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>{{ user_item.last_active.strftime('%Y-%m-%d') if user_item.last_active else 'Never' }}</td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center">No users found</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="mt-4">
+                <h3>How to Earn XP</h3>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card bg-dark h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Daily Activity</h5>
+                                <p class="card-text">Log in daily to earn streak bonuses. Each consecutive day increases your rewards!</p>
+                                <ul>
+                                    <li>Daily login: 10 XP</li>
+                                    <li>7-day streak: +50 XP bonus</li>
+                                    <li>30-day streak: +200 XP bonus</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card bg-dark h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Trading Success</h5>
+                                <p class="card-text">Earn XP by creating and using profitable trading scripts.</p>
+                                <ul>
+                                    <li>First profit: 50 XP</li>
+                                    <li>$100 in profits: 100 XP</li>
+                                    <li>$1000 in profits: 500 XP</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card bg-dark h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Community Achievements</h5>
+                                <p class="card-text">Earn XP through special achievements and community participation.</p>
+                                <ul>
+                                    <li>Creating scripts: 50-200 XP</li>
+                                    <li>Script popularity: up to 500 XP</li>
+                                    <li>Leaderboard ranking: up to 1000 XP</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

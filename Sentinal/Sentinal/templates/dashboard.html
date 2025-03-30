@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Welcome to your Dashboard</h2>
+
+            {% if user %}
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Account Information</h5>
+                        <p>Email: {{ user.email }}</p>
+                        <p>Balance: ${{ "%.2f"|format(user.balance) }}</p>
+
+                        {% if is_deriv_connected %}
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="btn-group" role="group" data-account-type="{{ session.get('account_type', 'real') }}">
+                                    <button type="button" class="btn btn-outline-success" onclick="switchAccount('real')">Real Account</button>
+                                    <button type="button" class="btn btn-outline-purple" onclick="switchAccount('demo')">Demo Account</button>
+                                </div>
+                            </div>
+                            <div class="account-info mt-3">
+                                <p class="mb-2">Trading Account: <strong class="{{ 'text-success' if session.get('account_type') == 'real' else 'text-purple' }}">{{ account_name }}</strong></p>
+                                <p class="h4">Balance: <span class="{{ 'text-success' if session.get('account_type') == 'real' else 'text-purple' }}">${{ "%.2f"|format(current_balance|float) }}</span></p>
+                            </div>
+                        {% else %}
+                            <a href="{{ url_for('deriv_login') }}" class="btn btn-primary">Connect Deriv Account</a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Recent Executions</h5>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Script</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if executions %}
+                                        {% for execution in executions %}
+                                            <tr>
+                                                <td>{{ execution.script.name }}</td>
+                                                <td>{{ execution.status }}</td>
+                                                <td>{{ execution.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="3" class="text-center">No executions yet</td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Recent Achievements</h5>
+                        {% if recent_achievements %}
+                            <div class="row">
+                                {% for achievement in recent_achievements %}
+                                    <div class="col-md-4">
+                                        <div class="card mb-3">
+                                            <div class="card-body">
+                                                <h6 class="card-title">{{ achievement.achievement.name }}</h6>
+                                                <p class="card-text">{{ achievement.achievement.description }}</p>
+                                                <small class="text-muted">Earned: {{ achievement.date_earned.strftime('%Y-%m-%d') }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-center">No achievements yet</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

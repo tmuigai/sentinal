@@ -1,0 +1,65 @@
+{
+  "name": "Sentinel Trading Platform",
+  "short_name": "Sentinel",
+  "description": "Secure trading algorithms with Docker isolation and automated profit sharing",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#212529",
+  "theme_color": "#212529",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/static/img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/img/sentinel-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/static/img/screenshot1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/static/img/screenshot2.png",
+      "sizes": "720x1280",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "url": "/dashboard",
+      "description": "View your trading dashboard"
+    },
+    {
+      "name": "Scripts",
+      "url": "/scripts",
+      "description": "Manage your trading scripts"
+    },
+    {
+      "name": "Create Script",
+      "url": "/create-script",
+      "description": "Create a new trading script"
+    }
+  ],
+  "categories": ["finance", "productivity", "utilities"],
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  }
+}

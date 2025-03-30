@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Payment Settings{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Admin Payment Settings</h1>
+    <p class="lead">Configure how you receive your admin profit share</p>
+    
+    <div class="card shadow mb-4">
+        <div class="card-header">
+            <h2 class="h5 mb-0">Your Current Payment Method</h2>
+        </div>
+        <div class="card-body">
+            {% if user.payment_method %}
+                <div class="alert alert-info">
+                    <p><strong>Current Method:</strong> {{ user.payment_method|capitalize }}</p>
+                    {% if user.payment_method == 'bank' %}
+                        <p><strong>Bank Name:</strong> {{ user.payment_details.bank_name }}</p>
+                        <p><strong>Account Holder:</strong> {{ user.payment_details.account_holder }}</p>
+                        <p><strong>Account Number:</strong> *****{{ user.payment_details.account_number[-4:] }}</p>
+                    {% elif user.payment_method == 'crypto' %}
+                        <p><strong>Cryptocurrency:</strong> {{ user.payment_details.crypto_currency }}</p>
+                        <p><strong>Wallet Address:</strong> {{ user.payment_details.wallet_address[:8] }}...{{ user.payment_details.wallet_address[-8:] }}</p>
+                    {% elif user.payment_method == 'paypal' %}
+                        <p><strong>PayPal Email:</strong> {{ user.payment_details.paypal_email }}</p>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="alert alert-warning">
+                    <p>You haven't set up a payment method yet. Please configure one below.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header">
+            <h2 class="h5 mb-0">Update Payment Method</h2>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin_payment_methods') }}">
+                <div class="mb-3">
+                    <label for="payment_method" class="form-label">Select Payment Method</label>
+                    <select class="form-select" id="payment_method" name="payment_method" required>
+                        <option value="">-- Select Method --</option>
+                        <option value="bank" {% if user.payment_method == 'bank' %}selected{% endif %}>Bank Transfer</option>
+                        <option value="crypto" {% if user.payment_method == 'crypto' %}selected{% endif %}>Cryptocurrency</option>
+                        <option value="paypal" {% if user.payment_method == 'paypal' %}selected{% endif %}>PayPal</option>
+                    </select>
+                </div>
+
+                <!-- Bank Transfer Details -->
+                <div id="bank_details" class="payment-details" style="display: none;">
+                    <h3 class="h6 mb-3">Bank Transfer Details</h3>
+                    <div class="mb-3">
+                        <label for="bank_name" class="form-label">Bank Name</label>
+                        <input type="text" class="form-control" id="bank_name" name="bank_name" value="{{ user.payment_details.bank_name if user.payment_method == 'bank' else '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="account_holder" class="form-label">Account Holder Name</label>
+                        <input type="text" class="form-control" id="account_holder" name="account_holder" value="{{ user.payment_details.account_holder if user.payment_method == 'bank' else '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="account_number" class="form-label">Account Number</label>
+                        <input type="text" class="form-control" id="account_number" name="account_number" value="{{ user.payment_details.account_number if user.payment_method == 'bank' else '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="routing_number" class="form-label">Routing/Sort Code</label>
+                        <input type="text" class="form-control" id="routing_number" name="routing_number" value="{{ user.payment_details.routing_number if user.payment_method == 'bank' else '' }}">
+                    </div>
+                </div>
+
+                <!-- Cryptocurrency Details -->
+                <div id="crypto_details" class="payment-details" style="display: none;">
+                    <h3 class="h6 mb-3">Cryptocurrency Details</h3>
+                    <div class="mb-3">
+                        <label for="crypto_currency" class="form-label">Cryptocurrency</label>
+                        <select class="form-select" id="crypto_currency" name="crypto_currency">
+                            <option value="BTC" {% if user.payment_method == 'crypto' and user.payment_details.crypto_currency == 'BTC' %}selected{% endif %}>Bitcoin (BTC)</option>
+                            <option value="ETH" {% if user.payment_method == 'crypto' and user.payment_details.crypto_currency == 'ETH' %}selected{% endif %}>Ethereum (ETH)</option>
+                            <option value="USDT" {% if user.payment_method == 'crypto' and user.payment_details.crypto_currency == 'USDT' %}selected{% endif %}>Tether (USDT)</option>
+                            <option value="USDC" {% if user.payment_method == 'crypto' and user.payment_details.crypto_currency == 'USDC' %}selected{% endif %}>USD Coin (USDC)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="wallet_address" class="form-label">Wallet Address</label>
+                        <input type="text" class="form-control" id="wallet_address" name="wallet_address" value="{{ user.payment_details.wallet_address if user.payment_method == 'crypto' else '' }}">
+                    </div>
+                </div>
+
+                <!-- PayPal Details -->
+                <div id="paypal_details" class="payment-details" style="display: none;">
+                    <h3 class="h6 mb-3">PayPal Details</h3>
+                    <div class="mb-3">
+                        <label for="paypal_email" class="form-label">PayPal Email</label>
+                        <input type="email" class="form-control" id="paypal_email" name="paypal_email" value="{{ user.payment_details.paypal_email if user.payment_method == 'paypal' else '' }}">
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary">Update Payment Method</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Back to Admin Dashboard</a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const paymentMethodSelect = document.getElementById('payment_method');
+        const bankDetails = document.getElementById('bank_details');
+        const cryptoDetails = document.getElementById('crypto_details');
+        const paypalDetails = document.getElementById('paypal_details');
+        
+        // Show the appropriate payment details form based on the selected method
+        function updatePaymentDetails() {
+            const selectedMethod = paymentMethodSelect.value;
+            
+            // Hide all payment details forms
+            bankDetails.style.display = 'none';
+            cryptoDetails.style.display = 'none';
+            paypalDetails.style.display = 'none';
+            
+            // Show the appropriate payment details form
+            if (selectedMethod === 'bank') {
+                bankDetails.style.display = 'block';
+            } else if (selectedMethod === 'crypto') {
+                cryptoDetails.style.display = 'block';
+            } else if (selectedMethod === 'paypal') {
+                paypalDetails.style.display = 'block';
+            }
+        }
+        
+        // Initial update
+        updatePaymentDetails();
+        
+        // Listen for changes to the payment method select
+        paymentMethodSelect.addEventListener('change', updatePaymentDetails);
+    });
+</script>
+{% endblock %}

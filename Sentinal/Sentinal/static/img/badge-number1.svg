@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="50" r="45" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+  <text x="50" y="40" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="white" text-anchor="middle">NUMBER</text>
+  <text x="50" y="65" font-family="Arial, sans-serif" font-size="30" font-weight="bold" fill="white" text-anchor="middle">ONE</text>
+  <path d="M35,20 C35,25 45,30 50,28 C55,30 65,25 65,20 C65,15 55,10 50,12 C45,10 35,15 35,20 Z" fill="#f1c40f" stroke="#f39c12" stroke-width="1"/>
+  <path d="M37,20 C37,23 45,26 50,25 C55,26 63,23 63,20 C63,17 55,14 50,15 C45,14 37,17 37,20 Z" fill="#f39c12" stroke="#e67e22" stroke-width="1"/>
+  <path d="M30,83 L70,83 L70,75 L60,70 L50,73 L40,70 L30,75 Z" fill="#c0392b" stroke="#e74c3c" stroke-width="1"/>
+</svg>

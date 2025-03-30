@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Execute Script - {{ script.name }} - Trading Scripts Platform{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Execute Script: {{ script.name }}</h1>
+    <a href="{{ url_for('script_detail', script_id=script.id) }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Back to Script
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Execution Parameters</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('execute_script', script_id=script.id) }}" method="POST" class="needs-validation" novalidate>
+                    {% if script.parameters %}
+                    <div class="parameters-form">
+                        {% for param_key, param_info in script.parameters.items() %}
+                        <div class="mb-3">
+                            <label for="param_{{ param_key }}" class="form-label">
+                                {{ param_key }}
+                                <span class="badge bg-secondary">{{ param_info.type }}</span>
+                            </label>
+                            
+                            {% if param_info.type == 'boolean' %}
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="param_{{ param_key }}" name="{{ param_key }}" 
+                                        {% if param_info.default|lower in ('true', 'yes', 'on', '1') %}checked{% endif %}>
+                                    <label class="form-check-label" for="param_{{ param_key }}">Enabled</label>
+                                </div>
+                            {% elif param_info.type == 'number' %}
+                                <input type="number" class="form-control" id="param_{{ param_key }}" name="{{ param_key }}" value="{{ param_info.default }}">
+                            {% else %}
+                                <input type="text" class="form-control" id="param_{{ param_key }}" name="{{ param_key }}" value="{{ param_info.default }}">
+                            {% endif %}
+                            
+                            <div class="form-text">Default: {{ param_info.default }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        This script doesn't have any configurable parameters.
+                    </div>
+                    {% endif %}
+                    
+                    {% if script.user_id != user.id and script.price > 0 %}
+                    <div class="alert alert-warning">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-exclamation-triangle-fill me-2 fs-4"></i>
+                            <div>
+                                <h5 class="mb-1">Usage Fee</h5>
+                                <p class="mb-0">
+                                    This script costs <strong>${{ script.price }}</strong> to execute. This amount will be deducted from your balance.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{{ url_for('script_detail', script_id=script.id) }}" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-play-fill me-1"></i> Execute Script
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-dark">
+                <h5 class="mb-0">Script Information</h5>
+            </div>
+            <div class="card-body">
+                <h6>{{ script.name }}</h6>
+                <p class="text-muted">Version {{ script.version }}</p>
+                
+                <p>{{ script.description or 'No description provided.' }}</p>
+                
+                <div class="mb-3">
+                    {% for tag in script.tags %}
+                    <span class="badge bg-info me-1">{{ tag.name }}</span>
+                    {% endfor %}
+                </div>
+                
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">Author:</dt>
+                    <dd class="col-sm-7">{{ User.query.get(script.user_id).email.split('@')[0] }}</dd>
+                    
+                    <dt class="col-sm-5">Created:</dt>
+                    <dd class="col-sm-7">{{ script.created_at.strftime('%Y-%m-%d') }}</dd>
+                    
+                    <dt class="col-sm-5">Price:</dt>
+                    <dd class="col-sm-7">
+                        {% if script.price > 0 %}
+                        <span class="badge bg-warning">${{ script.price }}</span>
+                        {% else %}
+                        <span class="badge bg-success">Free</span>
+                        {% endif %}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+        
+        <div class="card shadow-lg">
+            <div class="card-header bg-dark">
+                <h5 class="mb-0">Execution Process</h5>
+            </div>
+            <div class="card-body">
+                <ol class="list-group list-group-numbered mb-0">
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Parameter Configuration</div>
+                            Customize settings for this execution
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Script Queuing</div>
+                            Script is added to execution queue
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Docker Container Execution</div>
+                            Script runs in isolated environment
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Real-time Monitoring</div>
+                            View logs and status via WebSockets
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">Profit Calculation</div>
+                            Profits (if any) are distributed 70/30
+                        </div>
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

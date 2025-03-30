@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Script - {{ script.name }} - Trading Scripts Platform{% endblock %}
+
+{% block head %}
+<!-- Code Mirror for syntax highlighting -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
+<style>
+    .CodeMirror {
+        height: 500px;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 4px;
+    }
+    
+    .parameter-row {
+        transition: all 0.3s ease;
+    }
+    
+    .parameter-row:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Edit Script: {{ script.name }}</h1>
+    <a href="{{ url_for('script_detail', script_id=script.id) }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Back to Script
+    </a>
+</div>
+
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Script Details</h5>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('edit_script', script_id=script.id) }}" method="POST" class="needs-validation" novalidate>
+            <div class="row mb-3">
+                <div class="col-md-8">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Script Name</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ script.name }}" required>
+                        <div class="invalid-feedback">Please provide a script name.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3">{{ script.description }}</textarea>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="version" class="form-label">Version</label>
+                            <input type="text" class="form-control" id="version" name="version" value="{{ script.version }}" required>
+                            <div class="invalid-feedback">Please provide a version number.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="price" class="form-label">Price ($)</label>
+                            <input type="number" class="form-control" id="price" name="price" value="{{ script.price }}" min="0" step="0.01">
+                            <div class="form-text">Set price for others to use your script (0 for free)</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="tags" class="form-label">Tags</label>
+                        <select class="form-select select2-tags" id="tags" name="tags" multiple>
+                            {% for tag in tags %}
+                                <option value="{{ tag.name }}" {% if tag in script.tags %}selected{% endif %}>{{ tag.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Select existing tags or type to create new ones</div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label d-block">Visibility</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="public" name="public" {% if script.public %}checked{% endif %}>
+                            <label class="form-check-label" for="public">Make script public</label>
+                        </div>
+                        <div class="form-text">Public scripts can be seen and used by other users</div>
+                    </div>
+                    
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">Script Statistics</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text small">
+                                <i class="bi bi-calendar me-1"></i> Created: {{ script.created_at.strftime('%Y-%m-%d') }}
+                            </p>
+                            <p class="card-text small">
+                                <i class="bi bi-clock me-1"></i> Last updated: {{ script.updated_at.strftime('%Y-%m-%d') }}
+                            </p>
+                            <p class="card-text small">
+                                <i class="bi bi-play me-1"></i> Executions: {{ script.executions.count() }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <label for="code" class="form-label">Script Code</label>
+                <textarea class="form-control" id="code" name="code" required>{{ script.code }}</textarea>
+                <div class="invalid-feedback">Please provide script code.</div>
+            </div>
+            
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5>Script Parameters</h5>
+                    <button type="button" class="btn btn-sm btn-primary" id="add-parameter">
+                        <i class="bi bi-plus"></i> Add Parameter
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-body">
+                        <p class="text-muted small mb-3">
+                            Define parameters that users can customize when running your script.
+                            These will be available as environment variables in your script.
+                        </p>
+                        
+                        <div id="parameters-container">
+                            <!-- Parameter rows will be added here -->
+                            {% if script.parameters %}
+                                {% for param_key, param_info in script.parameters.items() %}
+                                <div class="row parameter-row mb-3">
+                                    <div class="col-md-4">
+                                        <input type="text" class="form-control" name="param_key" placeholder="Parameter name" value="{{ param_key }}">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <select class="form-select" name="param_type">
+                                            <option value="string" {% if param_info.type == 'string' %}selected{% endif %}>String</option>
+                                            <option value="number" {% if param_info.type == 'number' %}selected{% endif %}>Number</option>
+                                            <option value="boolean" {% if param_info.type == 'boolean' %}selected{% endif %}>Boolean</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="text" class="form-control" name="param_default" placeholder="Default value" value="{{ param_info.default }}">
+                                    </div>
+                                    <div class="col-md-1">
+                                        <button type="button" class="btn btn-danger remove-parameter">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="row parameter-row mb-3">
+                                    <div class="col-md-4">
+                                        <input type="text" class="form-control" name="param_key" placeholder="Parameter name" value="symbol">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <select class="form-select" name="param_type">
+                                            <option value="string" selected>String</option>
+                                            <option value="number">Number</option>
+                                            <option value="boolean">Boolean</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="text" class="form-control" name="param_default" placeholder="Default value" value="EURUSD">
+                                    </div>
+                                    <div class="col-md-1">
+                                        <button type="button" class="btn btn-danger remove-parameter">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{{ url_for('script_detail', script_id=script.id) }}" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Code Mirror for syntax highlighting -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+
+<!-- Select2 for tag selection -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize CodeMirror
+        const codeEditor = CodeMirror.fromTextArea(document.getElementById('code'), {
+            lineNumbers: true,
+            mode: 'python',
+            theme: 'dracula',
+            indentUnit: 4,
+            tabSize: 4,
+            indentWithTabs: false,
+            lineWrapping: true
+        });
+        
+        // Initialize Select2 for tags
+        $('.select2-tags').select2({
+            tags: true,
+            tokenSeparators: [',', ' '],
+            placeholder: 'Select or add tags'
+        });
+        
+        // Add parameter button functionality
+        document.getElementById('add-parameter').addEventListener('click', function() {
+            const parametersContainer = document.getElementById('parameters-container');
+            
+            const parameterRow = document.createElement('div');
+            parameterRow.className = 'row parameter-row mb-3';
+            parameterRow.innerHTML = `
+                <div class="col-md-4">
+                    <input type="text" class="form-control" name="param_key" placeholder="Parameter name">
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" name="param_type">
+                        <option value="string">String</option>
+                        <option value="number">Number</option>
+                        <option value="boolean">Boolean</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <input type="text" class="form-control" name="param_default" placeholder="Default value">
+                </div>
+                <div class="col-md-1">
+                    <button type="button" class="btn btn-danger remove-parameter">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            parametersContainer.appendChild(parameterRow);
+            
+            // Add event listener to the new remove button
+            parameterRow.querySelector('.remove-parameter').addEventListener('click', function() {
+                parametersContainer.removeChild(parameterRow);
+            });
+        });
+        
+        // Add event listeners to existing remove parameter buttons
+        document.querySelectorAll('.remove-parameter').forEach(button => {
+            button.addEventListener('click', function() {
+                const row = this.closest('.parameter-row');
+                if (row.parentNode) {
+                    row.parentNode.removeChild(row);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

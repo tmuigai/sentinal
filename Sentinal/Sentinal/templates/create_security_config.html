@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Security Configuration | Sentinel Trading{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      <h2>Create New Security Configuration</h2>
+      <p class="lead">Define resource limits and security options for script execution containers</p>
+      
+      <form method="post" action="{{ url_for('create_security_config') }}">
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Basic Information</h5>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="name" class="form-label">Configuration Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="name" name="name" required 
+                     placeholder="e.g., Premium Tier, Research Tier">
+              <small class="text-muted">A descriptive name for this security profile</small>
+            </div>
+            
+            <div class="mb-3">
+              <label for="role" class="form-label">Associated Role <span class="text-danger">*</span></label>
+              <select class="form-select" id="role" name="role" required>
+                <option value="" selected disabled>Select a role</option>
+                <option value="user">Regular User</option>
+                <option value="admin">Administrator</option>
+                <option value="super_admin">Super Administrator</option>
+                <option value="premium">Premium Tier</option>
+                <option value="research">Research Tier</option>
+                <option value="custom">Custom Role</option>
+              </select>
+              <small class="text-muted">User role that will use this security configuration</small>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Resource Limits</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="mem_limit" class="form-label">Memory Limit <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="mem_limit" name="mem_limit" value="256m" required
+                         placeholder="e.g., 256m, 1g">
+                  <small class="text-muted">Maximum memory allocation (e.g., "256m", "1g")</small>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="cpu_quota" class="form-label">CPU Quota <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" id="cpu_quota" name="cpu_quota" value="25000" required
+                           placeholder="e.g., 25000">
+                    <span class="input-group-text">= 25%</span>
+                  </div>
+                  <small class="text-muted">CPU allocation percentage (25000 = 25%)</small>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="pids_limit" class="form-label">Process Limit <span class="text-danger">*</span></label>
+                  <input type="number" class="form-control" id="pids_limit" name="pids_limit" value="50" required
+                         placeholder="e.g., 50">
+                  <small class="text-muted">Maximum number of processes allowed inside container</small>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="timeout" class="form-label">Execution Timeout (seconds) <span class="text-danger">*</span></label>
+                  <input type="number" class="form-control" id="timeout" name="timeout" value="300" required
+                         placeholder="e.g., 300">
+                  <small class="text-muted">Maximum execution time before termination (seconds)</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Security Options</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3 form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="network_access" name="network_access">
+                  <label class="form-check-label" for="network_access">Allow Network Access</label>
+                  <div><small class="text-muted">Enable network connectivity for containers</small></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3 form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="allow_file_write" name="allow_file_write">
+                  <label class="form-check-label" for="allow_file_write">Allow File Writes</label>
+                  <div><small class="text-muted">Enable write access to filesystem</small></div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3 form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="restrict_capabilities" name="restrict_capabilities" checked>
+                  <label class="form-check-label" for="restrict_capabilities">Restrict Linux Capabilities</label>
+                  <div><small class="text-muted">Limit privileged operations for enhanced security</small></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="seccomp_profile" class="form-label">Seccomp Profile</label>
+                  <select class="form-select" id="seccomp_profile" name="seccomp_profile">
+                    <option value="default" selected>Default</option>
+                    <option value="strict">Strict</option>
+                    <option value="custom">Custom</option>
+                    <option value="none">None (Less Secure)</option>
+                  </select>
+                  <small class="text-muted">System call filtering profile</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Additional Mounts</h5>
+          </div>
+          <div class="card-body">
+            <p class="text-muted">Define additional directories or files to mount inside the container</p>
+            
+            <div id="mounts-container">
+              <!-- Mount template will be cloned here -->
+              <div class="mount-entry bg-light p-3 mb-3 rounded">
+                <div class="row">
+                  <div class="col-md-5">
+                    <div class="mb-3">
+                      <label class="form-label">Source Path</label>
+                      <input type="text" class="form-control" name="mount_source" placeholder="/host/path">
+                    </div>
+                  </div>
+                  <div class="col-md-5">
+                    <div class="mb-3">
+                      <label class="form-label">Target Path</label>
+                      <input type="text" class="form-control" name="mount_target" placeholder="/container/path">
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="mb-3">
+                      <label class="form-label">Mode</label>
+                      <select class="form-select" name="mount_mode">
+                        <option value="ro" selected>Read-only</option>
+                        <option value="rw">Read-write</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <button type="button" id="add-mount" class="btn btn-sm btn-outline-secondary">
+              <i class="fas fa-plus"></i> Add Another Mount
+            </button>
+          </div>
+        </div>
+        
+        <div class="d-flex justify-content-between">
+          <a href="{{ url_for('security_configs') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Configurations
+          </a>
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-save"></i> Create Configuration
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% block scripts %}
+{{ super() }}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // CPU Quota display helper
+    const cpuQuotaInput = document.getElementById('cpu_quota');
+    const cpuQuotaDisplay = cpuQuotaInput.nextElementSibling;
+    
+    cpuQuotaInput.addEventListener('input', function() {
+      const value = parseInt(this.value) || 0;
+      const percentage = value / 1000;
+      cpuQuotaDisplay.textContent = `= ${percentage}%`;
+    });
+    
+    // Additional mounts functionality
+    const mountsContainer = document.getElementById('mounts-container');
+    const addMountButton = document.getElementById('add-mount');
+    const mountTemplate = mountsContainer.querySelector('.mount-entry').cloneNode(true);
+    
+    addMountButton.addEventListener('click', function() {
+      const newMount = mountTemplate.cloneNode(true);
+      
+      // Add a remove button to the new mount
+      const removeButton = document.createElement('button');
+      removeButton.type = 'button';
+      removeButton.className = 'btn btn-sm btn-outline-danger mt-2';
+      removeButton.innerHTML = '<i class="fas fa-trash"></i> Remove';
+      removeButton.addEventListener('click', function() {
+        mountsContainer.removeChild(newMount);
+      });
+      
+      newMount.appendChild(removeButton);
+      mountsContainer.appendChild(newMount);
+    });
+  });
+</script>
+{% endblock %}
+{% endblock %}

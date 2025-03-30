@@ -1,0 +1,77 @@
+2025-03-29 17:04:54,093 ERROR: Exception on /execute-script/1 [GET] [in /home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py:875]
+Traceback (most recent call last):
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask_cors/extension.py", line 176, in wrapped_function
+    return cors_after_request(app.make_response(f(*args, **kwargs)))
+                                                ^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask_jwt_extended/view_decorators.py", line 170, in decorator
+    return current_app.ensure_sync(fn)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/routes.py", line 779, in execute_script
+    return render_template('execute_script.html', user=user, script=script)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/templating.py", line 150, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/templating.py", line 131, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "/home/runner/workspace/templates/execute_script.html", line 1, in top-level template code
+    {% extends "base.html" %}
+  File "/home/runner/workspace/templates/base.html", line 124, in top-level template code
+    {% block content %}{% endblock %}
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/templates/execute_script.html", line 97, in block 'content'
+    <dd class="col-sm-7">{{ User.query.get(script.user_id).email.split('@')[0] }}</dd>
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/jinja2/environment.py", line 490, in getattr
+    return getattr(obj, attribute)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.UndefinedError: 'User' is undefined
+2025-03-29 17:11:18,489 INFO: Trading Script Platform startup [in /home/runner/workspace/app.py:113]
+2025-03-29 17:11:18,591 WARNING: Docker not available. Using mock Docker client for Replit environment [in /home/runner/workspace/tasks.py:204]
+2025-03-29 17:11:29,319 INFO: Trading Script Platform startup [in /home/runner/workspace/app.py:113]
+2025-03-29 17:11:29,366 WARNING: Docker not available. Using mock Docker client for Replit environment [in /home/runner/workspace/tasks.py:204]
+2025-03-29 17:12:04,676 INFO: Trading Script Platform startup [in /home/runner/workspace/app.py:113]
+2025-03-29 17:12:04,727 WARNING: Docker not available. Using mock Docker client for Replit environment [in /home/runner/workspace/tasks.py:204]
+2025-03-29 17:12:53,997 INFO: DERIV LOGIN - Callback URL: https://a7ba38e5-545b-40c7-bf33-055907d2e34a-00-11sipxn7velzs.picard.replit.dev/login/deriv/callback [in /home/runner/workspace/routes.py:217]
+2025-03-29 17:12:53,997 INFO: Using Deriv's expected scope format: read admin payments trading trading_information [in /home/runner/workspace/routes.py:229]
+2025-03-29 17:12:53,997 INFO: URL encoded scope: read%20admin%20payments%20trading%20trading_information [in /home/runner/workspace/routes.py:230]
+2025-03-29 17:12:53,998 INFO: Redirect URI: https://a7ba38e5-545b-40c7-bf33-055907d2e34a-00-11sipxn7velzs.picard.replit.dev/login/deriv/callback [in /home/runner/workspace/routes.py:231]
+2025-03-29 17:12:53,998 INFO: Redirecting to authorization URL: https://oauth.deriv.com/oauth2/authorize?response_type=code&app_id=70547&redirect_uri=https://a7ba38e5-545b-40c7-bf33-055907d2e34a-00-11sipxn7velzs.picard.replit.dev/login/deriv/callback&scope=read%20admin%20payments%20trading%20trading_information [in /home/runner/workspace/routes.py:240]
+2025-03-29 17:12:54,170 INFO: DERIV LOGIN - Callback URL: https://a7ba38e5-545b-40c7-bf33-055907d2e34a-00-11sipxn7velzs.picard.replit.dev/login/deriv/callback [in /home/runner/workspace/routes.py:217]
+2025-03-29 17:12:54,170 INFO: Using Deriv's expected scope format: read admin payments trading trading_information [in /home/runner/workspace/routes.py:229]
+2025-03-29 17:12:54,170 INFO: URL encoded scope: read%20admin%20payments%20trading%20trading_information [in /home/runner/workspace/routes.py:230]
+2025-03-29 17:12:54,170 INFO: Redirect URI: https://a7ba38e5-545b-40c7-bf33-055907d2e34a-00-11sipxn7velzs.picard.replit.dev/login/deriv/callback [in /home/runner/workspace/routes.py:231]
+2025-03-29 17:12:54,170 INFO: Redirecting to authorization URL: https://oauth.deriv.com/oauth2/authorize?response_type=code&app_id=70547&redirect_uri=https://a7ba38e5-545b-40c7-bf33-055907d2e34a-00-11sipxn7velzs.picard.replit.dev/login/deriv/callback&scope=read%20admin%20payments%20trading%20trading_information [in /home/runner/workspace/routes.py:240]
+2025-03-29 17:12:59,249 INFO: Received callback with args: ImmutableMultiDict([('acct1', 'CR6084375'), ('token1', 'a1-CA0YwyHMP8ceumoTjvOwhTU5TaUua'), ('cur1', 'USD'), ('acct2', 'VRTC8994441'), ('token2', 'a1-8Mo7ZUzFo9p5eW1BdUEvkEhhdbAgl'), ('cur2', 'USD')]) [in /home/runner/workspace/routes.py:246]
+2025-03-29 17:12:59,249 INFO: Request URL: http://a7ba38e5-545b-40c7-bf33-055907d2e34a-00-11sipxn7velzs.picard.replit.dev/login/deriv/callback?acct1=CR6084375&token1=a1-CA0YwyHMP8ceumoTjvOwhTU5TaUua&cur1=USD&acct2=VRTC8994441&token2=a1-8Mo7ZUzFo9p5eW1BdUEvkEhhdbAgl&cur2=USD [in /home/runner/workspace/routes.py:247]
+2025-03-29 17:12:59,250 INFO: Request method: GET [in /home/runner/workspace/routes.py:248]
+2025-03-29 17:12:59,250 INFO: Request headers: {'Host': 'a7ba38e5-545b-40c7-bf33-055907d2e34a-00-11sipxn7velzs.picard.replit.dev', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0', 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7', 'Accept-Encoding': 'identity, gzip, deflate, br, zstd', 'Accept-Language': 'en-US,en;q=0.9', 'Cookie': 'access_token_cookie=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc0MzI2NzY5MSwianRpIjoiMGUxZmFhNDItNTljMi00ZWViLWJkZjMtZmU0MzdiZTMxYzYxIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IjEiLCJuYmYiOjE3NDMyNjc2OTEsImV4cCI6MTc0MzI2ODU5MX0.6F1Eclp7DeRDS_mM6guLXQlUgOyEHJdSljFhEv6uetc', 'Referer': 'https://oauth.deriv.com/', 'Sec-Ch-Ua': '"Chromium";v="134", "Not:A-Brand";v="24", "Microsoft Edge";v="134"', 'Sec-Ch-Ua-Mobile': '?0', 'Sec-Ch-Ua-Platform': '"Windows"', 'Sec-Fetch-Dest': 'iframe', 'Sec-Fetch-Mode': 'navigate', 'Sec-Fetch-Site': 'cross-site', 'Sec-Fetch-Storage-Access': 'active', 'Sec-Fetch-User': '?1', 'Upgrade-Insecure-Requests': '1', 'X-Forwarded-For': '102.0.15.76, 10.81.10.40', 'X-Forwarded-Proto': 'https', 'X-Replit-User-Bio': '', 'X-Replit-User-Id': '', 'X-Replit-User-Name': '', 'X-Replit-User-Profile-Image': '', 'X-Replit-User-Roles': '', 'X-Replit-User-Teams': '', 'X-Replit-User-Url': ''} [in /home/runner/workspace/routes.py:249]
+2025-03-29 17:12:59,250 INFO: Checking for authentication tokens: code=None, token1=a1-CA0YwyHMP8ceumoTjvOwhTU5TaUua, token2=a1-8Mo7ZUzFo9p5eW1BdUEvkEhhdbAgl [in /home/runner/workspace/routes.py:262]
+2025-03-29 17:12:59,250 INFO: Using direct token approach with Deriv API [in /home/runner/workspace/routes.py:267]
+2025-03-29 17:12:59,250 INFO: Using token: a1-CA0YwyHMP8ceumoTjvOwhTU5TaUua for account: CR6084375 [in /home/runner/workspace/routes.py:277]
+2025-03-29 17:12:59,251 INFO: Using Deriv token directly: a1-CA0YwyHMP8ceumoTjvOwhTU5TaUua [in /home/runner/workspace/routes.py:281]
+2025-03-29 17:15:00,282 INFO: Trading Script Platform startup [in /home/runner/workspace/app.py:113]
+2025-03-29 17:15:00,495 WARNING: Docker not available. Using mock Docker client for Replit environment [in /home/runner/workspace/tasks.py:204]
+2025-03-29 17:15:12,066 INFO: Trading Script Platform startup [in /home/runner/workspace/app.py:113]
+2025-03-29 17:15:12,125 WARNING: Docker not available. Using mock Docker client for Replit environment [in /home/runner/workspace/tasks.py:204]
+2025-03-29 17:15:25,067 INFO: DERIV LOGIN - Callback URL: https://a7ba38e5-545b-40c7-bf33-055907d2e34a-00-11sipxn7velzs.picard.replit.dev/login/deriv/callback [in /home/runner/workspace/routes.py:217]
+2025-03-29 17:15:25,067 INFO: Using Deriv's expected scope format: read admin payments trading trading_information [in /home/runner/workspace/routes.py:229]
+2025-03-29 17:15:25,067 INFO: URL encoded scope: read%20admin%20payments%20trading%20trading_information [in /home/runner/workspace/routes.py:230]
+2025-03-29 17:15:25,067 INFO: Redirect URI: https://a7ba38e5-545b-40c7-bf33-055907d2e34a-00-11sipxn7velzs.picard.replit.dev/login/deriv/callback [in /home/runner/workspace/routes.py:231]

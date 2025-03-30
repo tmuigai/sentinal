@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Admin Payment Methods{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Manage Admin Payment Methods</h1>
+    <p class="lead">Super Admin Control Panel for Admin Payment Methods</p>
+    
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h5 mb-0">All Administrators</h2>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Payment Method</th>
+                                    <th>Details</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for admin in admins %}
+                                <tr>
+                                    <td>{{ admin.id }}</td>
+                                    <td>{{ admin.email }}</td>
+                                    <td>
+                                        <span class="badge {% if admin.role == 'super_admin' %}bg-danger{% else %}bg-primary{% endif %}">
+                                            {{ admin.role|capitalize }}
+                                        </span>
+                                    </td>
+                                    <td>{{ admin.payment_method|capitalize if admin.payment_method else 'Not Set' }}</td>
+                                    <td>
+                                        {% if admin.payment_method == 'bank' %}
+                                            Bank: {{ admin.payment_details.bank_name }}<br>
+                                            Account: *****{{ admin.payment_details.account_number[-4:] }}
+                                        {% elif admin.payment_method == 'crypto' %}
+                                            {{ admin.payment_details.crypto_currency }} Wallet:<br>
+                                            {{ admin.payment_details.wallet_address[:8] }}...{{ admin.payment_details.wallet_address[-8:] }}
+                                        {% elif admin.payment_method == 'paypal' %}
+                                            {{ admin.payment_details.paypal_email }}
+                                        {% else %}
+                                            No details available
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#updateAdminModal{{ admin.id }}">
+                                            Update Payment Method
+                                        </button>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Modal for updating admin payment method -->
+                                <div class="modal fade" id="updateAdminModal{{ admin.id }}" tabindex="-1" aria-labelledby="updateAdminModalLabel{{ admin.id }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="updateAdminModalLabel{{ admin.id }}">Update Payment Method for {{ admin.email }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form method="POST" action="{{ url_for('update_admin_payment', admin_id=admin.id) }}">
+                                                    <div class="mb-3">
+                                                        <label for="payment_method{{ admin.id }}" class="form-label">Select Payment Method</label>
+                                                        <select class="form-select payment-method-select" id="payment_method{{ admin.id }}" name="payment_method" required data-admin-id="{{ admin.id }}">
+                                                            <option value="">-- Select Method --</option>
+                                                            <option value="bank" {% if admin.payment_method == 'bank' %}selected{% endif %}>Bank Transfer</option>
+                                                            <option value="crypto" {% if admin.payment_method == 'crypto' %}selected{% endif %}>Cryptocurrency</option>
+                                                            <option value="paypal" {% if admin.payment_method == 'paypal' %}selected{% endif %}>PayPal</option>
+                                                        </select>
+                                                    </div>
+                
+                                                    <!-- Bank Transfer Details -->
+                                                    <div id="bank_details{{ admin.id }}" class="payment-details" style="display: none;">
+                                                        <h3 class="h6 mb-3">Bank Transfer Details</h3>
+                                                        <div class="mb-3">
+                                                            <label for="bank_name{{ admin.id }}" class="form-label">Bank Name</label>
+                                                            <input type="text" class="form-control" id="bank_name{{ admin.id }}" name="bank_name" value="{{ admin.payment_details.bank_name if admin.payment_method == 'bank' else '' }}">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label for="account_holder{{ admin.id }}" class="form-label">Account Holder Name</label>
+                                                            <input type="text" class="form-control" id="account_holder{{ admin.id }}" name="account_holder" value="{{ admin.payment_details.account_holder if admin.payment_method == 'bank' else '' }}">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label for="account_number{{ admin.id }}" class="form-label">Account Number</label>
+                                                            <input type="text" class="form-control" id="account_number{{ admin.id }}" name="account_number" value="{{ admin.payment_details.account_number if admin.payment_method == 'bank' else '' }}">
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label for="routing_number{{ admin.id }}" class="form-label">Routing/Sort Code</label>
+                                                            <input type="text" class="form-control" id="routing_number{{ admin.id }}" name="routing_number" value="{{ admin.payment_details.routing_number if admin.payment_method == 'bank' else '' }}">
+                                                        </div>
+                                                    </div>
+                
+                                                    <!-- Cryptocurrency Details -->
+                                                    <div id="crypto_details{{ admin.id }}" class="payment-details" style="display: none;">
+                                                        <h3 class="h6 mb-3">Cryptocurrency Details</h3>
+                                                        <div class="mb-3">
+                                                            <label for="crypto_currency{{ admin.id }}" class="form-label">Cryptocurrency</label>
+                                                            <select class="form-select" id="crypto_currency{{ admin.id }}" name="crypto_currency">
+                                                                <option value="BTC" {% if admin.payment_method == 'crypto' and admin.payment_details.crypto_currency == 'BTC' %}selected{% endif %}>Bitcoin (BTC)</option>
+                                                                <option value="ETH" {% if admin.payment_method == 'crypto' and admin.payment_details.crypto_currency == 'ETH' %}selected{% endif %}>Ethereum (ETH)</option>
+                                                                <option value="USDT" {% if admin.payment_method == 'crypto' and admin.payment_details.crypto_currency == 'USDT' %}selected{% endif %}>Tether (USDT)</option>
+                                                                <option value="USDC" {% if admin.payment_method == 'crypto' and admin.payment_details.crypto_currency == 'USDC' %}selected{% endif %}>USD Coin (USDC)</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label for="wallet_address{{ admin.id }}" class="form-label">Wallet Address</label>
+                                                            <input type="text" class="form-control" id="wallet_address{{ admin.id }}" name="wallet_address" value="{{ admin.payment_details.wallet_address if admin.payment_method == 'crypto' else '' }}">
+                                                        </div>
+                                                    </div>
+                
+                                                    <!-- PayPal Details -->
+                                                    <div id="paypal_details{{ admin.id }}" class="payment-details" style="display: none;">
+                                                        <h3 class="h6 mb-3">PayPal Details</h3>
+                                                        <div class="mb-3">
+                                                            <label for="paypal_email{{ admin.id }}" class="form-label">PayPal Email</label>
+                                                            <input type="email" class="form-control" id="paypal_email{{ admin.id }}" name="paypal_email" value="{{ admin.payment_details.paypal_email if admin.payment_method == 'paypal' else '' }}">
+                                                        </div>
+                                                    </div>
+                
+                                                    <div class="d-grid gap-2 mt-4">
+                                                        <button type="submit" class="btn btn-primary">Update Payment Method</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Back to Admin Dashboard</a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get all payment method selects
+        const paymentMethodSelects = document.querySelectorAll('.payment-method-select');
+        
+        // Function to update payment details for a specific admin
+        function updatePaymentDetails(adminId, selectedMethod) {
+            // Get the payment details forms for this admin
+            const bankDetails = document.getElementById(`bank_details${adminId}`);
+            const cryptoDetails = document.getElementById(`crypto_details${adminId}`);
+            const paypalDetails = document.getElementById(`paypal_details${adminId}`);
+            
+            // Hide all payment details forms
+            bankDetails.style.display = 'none';
+            cryptoDetails.style.display = 'none';
+            paypalDetails.style.display = 'none';
+            
+            // Show the appropriate payment details form
+            if (selectedMethod === 'bank') {
+                bankDetails.style.display = 'block';
+            } else if (selectedMethod === 'crypto') {
+                cryptoDetails.style.display = 'block';
+            } else if (selectedMethod === 'paypal') {
+                paypalDetails.style.display = 'block';
+            }
+        }
+        
+        // Add change event listeners to each payment method select
+        paymentMethodSelects.forEach(select => {
+            const adminId = select.getAttribute('data-admin-id');
+            
+            // Initial update
+            updatePaymentDetails(adminId, select.value);
+            
+            // Listen for changes to the select
+            select.addEventListener('change', function() {
+                updatePaymentDetails(adminId, this.value);
+            });
+        });
+    });
+</script>
+{% endblock %}

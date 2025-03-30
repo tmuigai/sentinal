@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="50" r="45" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+  <text x="50" y="40" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">POPULAR</text>
+  <text x="50" y="60" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="white" text-anchor="middle">SCRIPT</text>
+  <path d="M20,72 L35,72 L35,80 L20,80 Z" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+  <path d="M38,65 L53,65 L53,80 L38,80 Z" fill="#e67e22" stroke="#d35400" stroke-width="1"/>
+  <path d="M56,55 L71,55 L71,80 L56,80 Z" fill="#f1c40f" stroke="#f39c12" stroke-width="1"/>
+  <path d="M74,40 L89,40 L89,80 L74,80 Z" fill="#2ecc71" stroke="#27ae60" stroke-width="1"/>
+  <path d="M20,30 A30,30 0 0,1 80,30" fill="none" stroke="white" stroke-width="2" stroke-dasharray="3,2"/>
+</svg>

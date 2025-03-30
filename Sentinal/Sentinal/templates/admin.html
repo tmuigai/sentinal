@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Trading Scripts Platform{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">
+        {% if is_super_admin %}
+        Super Admin Dashboard
+        <span class="badge bg-danger">Super Admin</span>
+        {% else %}
+        Admin Dashboard
+        <span class="badge bg-primary">Admin</span>
+        {% endif %}
+    </h1>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h2>{{ total_executions }}</h2>
+                    <p class="mb-0">Total Executions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h2>{{ successful_executions }}</h2>
+                    <p class="mb-0">Successful Executions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h2>{{ failed_executions }}</h2>
+                    <p class="mb-0">Failed Executions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h2>${{ total_profits|round(2) }}</h2>
+                    <p class="mb-0">Total Profits</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Super Admin Specific Actions -->
+    {% if is_super_admin %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">Super Admin Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('manage_admin_payment_methods') }}" class="btn btn-primary">
+                                    <i class="bi bi-credit-card me-2"></i>Manage Admin Payment Methods
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-grid gap-2">
+                                <a href="#" class="btn btn-success">
+                                    <i class="bi bi-cash-coin me-2"></i>View Platform Fees (${{ platform_fees|round(2) }})
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#createSuperAdminModal">
+                                    <i class="bi bi-shield-lock me-2"></i>Create Super Admin
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mt-3">
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('security_configs') }}" class="btn btn-info">
+                                    <i class="bi bi-shield-lock-fill me-2"></i>Container Security Configs
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal for creating super admin -->
+    <div class="modal fade" id="createSuperAdminModal" tabindex="-1" aria-labelledby="createSuperAdminModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createSuperAdminModalLabel">Create Super Admin</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Warning: This will grant the user full system access including user data, payment details, and complete admin controls.
+                    </div>
+                    <form id="superAdminForm" action="{{ url_for('make_admin', user_id=0) }}" method="post">
+                        <div class="mb-3">
+                            <label for="userSelect" class="form-label">Select User</label>
+                            <select class="form-select" id="userSelect" required>
+                                <option value="">Select a user...</option>
+                                {% for u in users %}
+                                    {% if u.role == 'user' %}
+                                    <option value="{{ u.id }}">{{ u.email }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <input type="hidden" name="role" value="super_admin">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmSuperAdmin">Create Super Admin</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">User Management</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Balance</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for u in users %}
+                                <tr>
+                                    <td>{{ u.id }}</td>
+                                    <td>{{ u.email }}</td>
+                                    <td>
+                                        <span class="badge {{ 'bg-danger' if u.role == 'super_admin' else ('bg-success' if u.role == 'admin' else 'bg-primary') }}">
+                                            {{ u.role|capitalize }}
+                                        </span>
+                                    </td>
+                                    <td>${{ u.balance|round(2) }}</td>
+                                    <td>
+                                        <span class="badge {{ 'bg-danger' if u.blocked else 'bg-success' }}">
+                                            {{ 'Blocked' if u.blocked else 'Active' }}
+                                        </span>
+                                    </td>
+                                    <td>{{ u.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <!-- Only show block button if user isn't a super admin or if current user is super admin -->
+                                            {% if u.role != 'super_admin' or is_super_admin %}
+                                            <form action="{{ url_for('block_user', user_id=u.id) }}" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-sm {{ 'btn-warning' if not u.blocked else 'btn-success' }}" 
+                                                   data-bs-toggle="tooltip" title="{{ 'Block User' if not u.blocked else 'Unblock User' }}"
+                                                   {% if u.role == 'super_admin' and not is_super_admin %}disabled{% endif %}>
+                                                    <i class="bi {{ 'bi-lock' if not u.blocked else 'bi-unlock' }}"></i>
+                                                </button>
+                                            </form>
+                                            {% endif %}
+                                            
+                                            <!-- Only super admins can manage other admins' status -->
+                                            {% if (u.role not in ['admin', 'super_admin']) or is_super_admin %}
+                                            <form action="{{ url_for('make_admin', user_id=u.id) }}" method="post" class="d-inline">
+                                                <input type="hidden" name="role" value="{{ 'user' if u.role in ['admin', 'super_admin'] else 'admin' }}">
+                                                <button type="submit" class="btn btn-sm {{ 'btn-info' if u.role not in ['admin', 'super_admin'] else 'btn-secondary' }}" 
+                                                   data-bs-toggle="tooltip" title="{{ 'Make Admin' if u.role not in ['admin', 'super_admin'] else 'Remove Admin' }}"
+                                                   {% if u.role == 'super_admin' and not is_super_admin %}disabled{% endif %}>
+                                                    <i class="bi bi-person-badge"></i>
+                                                </button>
+                                            </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Admin Logs</h5>
+                </div>
+                <div class="card-body admin-logs" style="max-height: 300px; overflow-y: auto;">
+                    <ul class="list-group list-group-flush">
+                        {% for log in admin_logs %}
+                        <li class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ log.action }}</h6>
+                                <small>{{ log.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                            <p class="mb-1">Admin: {{ User.query.get(log.admin_id).email }}</p>
+                            {% if log.ip_address %}
+                            <small class="text-muted">IP: {{ log.ip_address }}</small>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Admin Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('admin_payment_methods') }}" class="btn btn-primary">
+                            <i class="bi bi-wallet me-2"></i>My Payment Methods
+                        </a>
+                        {% if is_super_admin %}
+                        <a href="{{ url_for('security_configs') }}" class="btn btn-info">
+                            <i class="bi bi-shield-lock me-2"></i>Security Configurations
+                        </a>
+                        {% endif %}
+                        <button class="btn btn-warning">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Restart Docker Service
+                        </button>
+                        <button class="btn btn-danger">
+                            <i class="bi bi-exclamation-triangle me-2"></i>Clear Failed Containers
+                        </button>
+                        <button class="btn btn-info">
+                            <i class="bi bi-bar-chart me-2"></i>Generate Reports
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+        
+        // Super admin functionality
+        const userSelect = document.getElementById('userSelect');
+        const superAdminForm = document.getElementById('superAdminForm');
+        const confirmSuperAdmin = document.getElementById('confirmSuperAdmin');
+        
+        if (confirmSuperAdmin) {
+            confirmSuperAdmin.addEventListener('click', function() {
+                const selectedUserId = userSelect.value;
+                if (selectedUserId) {
+                    // Update the form action to include the selected user ID
+                    superAdminForm.action = "{{ url_for('make_admin', user_id=0) }}".replace('0', selectedUserId);
+                    superAdminForm.submit();
+                } else {
+                    alert('Please select a user to promote to super admin');
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

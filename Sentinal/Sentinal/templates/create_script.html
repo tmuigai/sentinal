@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block title %}Create Script - Trading Scripts Platform{% endblock %}
+
+{% block head %}
+<!-- Code Mirror for syntax highlighting -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
+<style>
+    .CodeMirror {
+        height: 500px;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 4px;
+    }
+
+    .parameter-row {
+        transition: all 0.3s ease;
+    }
+
+    .parameter-row:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Create New Script</h1>
+    <a href="{{ url_for('scripts') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Back to Scripts
+    </a>
+</div>
+
+<div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Script Details</h5>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('create_script') }}" method="POST" class="needs-validation" novalidate>
+            <div class="row mb-3">
+                <div class="col-md-8">
+                    {% if user.role in ['admin', 'super_admin'] %}
+                    <div class="mb-3">
+                        <label for="owner_id" class="form-label">Script Owner</label>
+                        <select class="form-select" id="owner_id" name="owner_id">
+                            <option value="{{ user.id }}">{{ user.email }} (You)</option>
+                            {% for u in User.query.filter(User.id != user.id).all() %}
+                            <option value="{{ u.id }}">{{ u.email }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Select the user who will own this script</div>
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Script Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                        <div class="invalid-feedback">Please provide a script name.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="version" class="form-label">Version</label>
+                            <input type="text" class="form-control" id="version" name="version" value="1.0.0" required>
+                            <div class="invalid-feedback">Please provide a version number.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="price" class="form-label">Price ($)</label>
+                            <input type="number" class="form-control" id="price" name="price" value="0.00" min="0" step="0.01">
+                            <div class="form-text">Set price for others to use your script (0 for free)</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="tags" class="form-label">Tags</label>
+                        <select class="form-select select2-tags" id="tags" name="tags" multiple>
+                            {% for tag in tags %}
+                            <option value="{{ tag.name }}">{{ tag.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Select existing tags or type to create new ones</div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label d-block">Visibility</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="public" name="public">
+                            <label class="form-check-label" for="public">Make script public</label>
+                        </div>
+                        <div class="form-text">Public scripts can be seen and used by other users</div>
+                    </div>
+
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">How Pricing Works</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text small">
+                                <i class="bi bi-info-circle me-1"></i> When other users execute your script, they'll pay the specified price.
+                            </p>
+                            <p class="card-text small">
+                                <i class="bi bi-cash-coin me-1"></i> If your script generates profit, you'll receive 70% of the profit.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <label for="code" class="form-label mb-0">Script Code</label>
+                    <div class="input-group" style="width: auto;">
+                        <input type="file" class="form-control" id="script_file" name="script_file" accept=".py">
+                        <button type="button" class="btn btn-outline-secondary" onclick="uploadFile()">
+                            <i class="bi bi-upload"></i> Upload
+                        </button>
+                    </div>
+                </div>
+                <textarea class="form-control" id="code" name="code" required>
+# Simple Trading Script Template
+import os
+import datetime
+import json
+
+# Example: Get API token from environment
+api_token = os.environ.get("DERIV_TOKEN", "")
+if not api_token:
+    print("Error: No API token provided")
+    exit(1)
+
+# Your trading logic here
+print("Script execution started at", datetime.datetime.now())
+
+# Example: Calculate some profit
+initial_balance = 1000
+final_balance = 1100
+profit = final_balance - initial_balance
+
+# Important: Print profit in the required format for platform to parse
+print(f"PROFIT: {json.dumps({'profit': profit})}")
+</textarea>
+                <div class="invalid-feedback">Please provide script code.</div>
+            </div>
+
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5>Script Parameters</h5>
+                    <button type="button" class="btn btn-sm btn-primary" id="add-parameter">
+                        <i class="bi bi-plus"></i> Add Parameter
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <p class="text-muted small mb-3">
+                            Define parameters that users can customize when running your script.
+                            These will be available as environment variables in your script.
+                        </p>
+
+                        <div id="parameters-container">
+                            <!-- Parameter rows will be added here -->
+                            <div class="row parameter-row mb-3">
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control" name="param_key" placeholder="Parameter name" value="symbol">
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select" name="param_type">
+                                        <option value="string" selected>String</option>
+                                        <option value="number">Number</option>
+                                        <option value="boolean">Boolean</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control" name="param_default" placeholder="Default value" value="EURUSD">
+                                </div>
+                                <div class="col-md-1">
+                                    <button type="button" class="btn btn-danger remove-parameter">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{{ url_for('scripts') }}" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                <button type="submit" class="btn btn-primary">Create Script</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Code Mirror for syntax highlighting -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+
+<!-- Select2 for tag selection -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize CodeMirror
+        const codeEditor = CodeMirror.fromTextArea(document.getElementById('code'), {
+            lineNumbers: true,
+            mode: 'python',
+            theme: 'dracula',
+            indentUnit: 4,
+            tabSize: 4,
+            indentWithTabs: false,
+            lineWrapping: true
+        });
+
+        // Initialize Select2 for tags
+        $('.select2-tags').select2({
+            tags: true,
+            tokenSeparators: [',', ' '],
+            placeholder: 'Select or add tags'
+        });
+
+        // Add parameter button functionality
+        document.getElementById('add-parameter').addEventListener('click', function() {
+            const parametersContainer = document.getElementById('parameters-container');
+
+            const parameterRow = document.createElement('div');
+            parameterRow.className = 'row parameter-row mb-3';
+            parameterRow.innerHTML = `
+                <div class="col-md-4">
+                    <input type="text" class="form-control" name="param_key" placeholder="Parameter name">
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" name="param_type">
+                        <option value="string">String</option>
+                        <option value="number">Number</option>
+                        <option value="boolean">Boolean</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <input type="text" class="form-control" name="param_default" placeholder="Default value">
+                </div>
+                <div class="col-md-1">
+                    <button type="button" class="btn btn-danger remove-parameter">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            `;
+
+            parametersContainer.appendChild(parameterRow);
+
+            // Add event listener to the new remove button
+            parameterRow.querySelector('.remove-parameter').addEventListener('click', function() {
+                parametersContainer.removeChild(parameterRow);
+            });
+        });
+
+        // Add event listeners to existing remove parameter buttons
+        document.querySelectorAll('.remove-parameter').forEach(button => {
+            button.addEventListener('click', function() {
+                const row = this.closest('.parameter-row');
+                if (row.parentNode) {
+                    row.parentNode.removeChild(row);
+                }
+            });
+        });
+
+        });
+
+    // File upload handling 
+    window.uploadFile = function() {
+        const fileInput = document.getElementById('script_file');
+        const file = fileInput.files[0];
+        
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                codeEditor.setValue(e.target.result);
+            };
+            reader.readAsText(file);
+        }
+    };
+</script>
+{% endblock %}
